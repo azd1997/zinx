@@ -33,7 +33,20 @@ Zinx - 轻量级TCP服务器框架
         - 与当前连接绑定的处理业务方法
         - 等待连接被动退出的channel
 
+3. 基础路由模块：
+    (1)对Request进行封装，将连接和数据绑定在一起
+    3.1 方法
+        - 获取当前连接
+        - 获取当前数据
+        - 新建一个Request请求
+    3.2 属性
+        - 连接 IConnection
+        - 请求数据
+    (2)
+
+
 ## 实现
 
-1. 抽象层定义IServer接口并在实体层实现其。
-2. 抽象层定义IConnection接口并在实体层实现。
+1. 抽象层定义IServer接口并在实体层以Server实现。
+2. 抽象层定义IConnection接口并在实体层以Connection实现。
+3. 抽象层定义IRequest接口并在实体层以Request实现。
