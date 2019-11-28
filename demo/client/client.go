@@ -21,7 +21,7 @@ func main() {
 
 	for {
 		// 2. 调用conn，向服务器Write数据
-		if _, err = conn.Write([]byte("Hello, Zinx v0.1")); err != nil {
+		if _, err = conn.Write([]byte("Hello, Zinx v0.2")); err != nil {
 			fmt.Printf("Client: Write conn: %s\n", err)
 			return
 		}

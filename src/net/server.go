@@ -44,33 +44,43 @@ func (s *Server) Start() {
 
 		fmt.Printf("[Start] Server starts listening at IP: %s, Port: %d successful\n", s.IP, s.Port)
 
+		var connID uint32 = 0
+
 		// 3. 阻塞等待客户端连接，处理客户端连接业务
 		for {
 			// 如果有客户端连接，则阻塞会返回，往下执行
-			conn, err := listener.Accept()
+			conn, err := listener.AcceptTCP()
 			if err != nil {
-				fmt.Printf("Start: Listener Accept%s\n", err)
+				fmt.Printf("Start: Listener AcceptTCP: %s\n", err)
 				continue
 			}
 
 			// 已经与客户端进行连接，做一个基本的业务： 最大512字节长度的回显业务
-			go func() {
-				for {
-					buf := make([]byte, 512)
-					cnt, err := conn.Read(buf)
-					if err != nil {
-						fmt.Printf("Start: Conn Read%s\n", err)
-						continue
-					}
-					fmt.Printf("Receive from client: %s, cnt = %d\n", string(buf), cnt)
+			//go func() {
+			//	for {
+			//		buf := make([]byte, 512)
+			//		cnt, err := conn.Read(buf)
+			//		if err != nil {
+			//			fmt.Printf("Start: Conn Read%s\n", err)
+			//			continue
+			//		}
+			//		fmt.Printf("Receive from client: %s, cnt = %d\n", string(buf), cnt)
+			//
+			//		// 回显
+			//		if _, err := conn.Write(buf[:cnt]); err != nil {
+			//			fmt.Printf("Start: Conn Write back: %s\n", err)
+			//			continue
+			//		}
+			//	}
+			//}()
 
-					// 回显
-					if _, err := conn.Write(buf[:cnt]); err != nil {
-						fmt.Printf("Start: Conn Write back: %s\n", err)
-						continue
-					}
-				}
-			}()
+			// 原本回显的部分可以由connection实现，如下
+
+			// 将处理当前连接的业务方法和conn进行绑定，得到我们的连接模块
+			dealConn := NewConnection(conn, connID, CallBackToClient)
+			connID++
+			// 尝试启动连接模块
+			go dealConn.Start()
 		}
 	}()
 }
@@ -99,4 +109,20 @@ func NewServer(name string) iface.IServer {
 		IP:        "0.0.0.0",	// TODO: 暂时写死
 		Port:      8000,
 	}
+}
+
+// CallBackToClient 回显函数，HandleFunc的一个实现（定义当前客户端连接所绑定的handleAPI），用于服务器的功能测试
+// TODO: 以后要将这个handleAPI在demo里自定义
+func CallBackToClient(conn *net.TCPConn, data []byte, cnt int) error {
+	// 回显业务
+	fmt.Println("[Conn Handle] CallBackToClient...")
+
+	if _, err := conn.Write(data[:cnt]); err != nil {
+		fmt.Printf("CallBackToClient: %s\n", err)
+		return err
+	} else {
+		fmt.Printf("Received from client: %s, cnt = %d\n", string(data), cnt)
+	}
+
+	return nil
 }
