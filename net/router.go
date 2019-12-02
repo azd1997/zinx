@@ -3,7 +3,7 @@ package net
 import "github.com/azd1997/zinx/iface"
 
 // 实现用户自己的IRouter，先嵌入这个BaseRouter，再根据需要对“基类”方法进行“重写”
-type BaseRouter struct {}
+type BaseRouter struct{}
 
 // 这里的方法都为空的原因是，用户不一定都需要三个阶段的方法，所以用户自定义路由“继承”自BaseRouter可以不用再重写不需要的PreHandle或PostHandle方法
 

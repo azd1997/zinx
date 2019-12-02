@@ -56,6 +56,12 @@ Zinx - 轻量级TCP服务器框架
         - Connection类绑定一个Router成员
         - Connection调用 已经注册的Router处理业务
 
+4. 全局配置模块：
+   1. 服务器应用/conf/zinx.json（由用户填写）
+   2. 创建zinx全局配置模块/utils/globalobj.go
+   3. 将zinx框架中所有硬编码替换成globalobj参数
+   4. 使用zinx v0.4进行测试
+
 ## 实现
 
 1. 抽象层定义IServer接口并在实体层以Server实现。

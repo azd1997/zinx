@@ -20,7 +20,7 @@ func main() {
 
 // 自定义路由
 type PingRouter struct {
-	net.BaseRouter	// 先"继承"BaseRouter
+	net.BaseRouter // 先"继承"BaseRouter
 }
 
 // 覆盖（屏蔽内层方法）

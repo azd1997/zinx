@@ -10,7 +10,7 @@ import (
 func main() {
 	fmt.Println("TCP Client starts...")
 
-	time.Sleep(1*time.Second)
+	time.Sleep(1 * time.Second)
 
 	// 1. 连接TCP服务器，得到conn
 	conn, err := net.Dial("tcp", "127.0.0.1:8000")
@@ -36,7 +36,7 @@ func main() {
 		}
 
 		// 4. 睡眠
-		time.Sleep(1*time.Second)
+		time.Sleep(1 * time.Second)
 	}
 
 }

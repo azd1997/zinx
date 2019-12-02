@@ -28,11 +28,11 @@ type Connection struct {
 // NewConnection 新建TCP连接对象
 func NewConnection(conn *net.TCPConn, id uint32, router iface.IRouter) *Connection {
 	return &Connection{
-		Conn:      conn,
-		ID:        id,
-		isClosed:  false,
-		Router: router,
-		ExitChan:  make(chan bool, 1),	// 有缓冲通道
+		Conn:     conn,
+		ID:       id,
+		isClosed: false,
+		Router:   router,
+		ExitChan: make(chan bool, 1), // 有缓冲通道
 	}
 }
 

@@ -100,8 +100,8 @@ func NewServer(name string) iface.IServer {
 	return &Server{
 		Name:      name,
 		IPVersion: "tcp4",
-		IP:        "0.0.0.0",	// TODO: 暂时写死
+		IP:        "0.0.0.0", // TODO: 暂时写死
 		Port:      8000,
-		Router:nil,
+		Router:    nil,
 	}
 }
