@@ -18,26 +18,12 @@ type Connection struct {
 	// isClosed 当前连接状态
 	isClosed bool
 
-	// handleAPI 当前连接绑定的处理业务方法API
-	//handleAPI iface.HandleFunc
-
 	// ExitChan 告知当前连接退出的channel
 	ExitChan chan bool
 
 	// Router 该连接处理的方法路由
 	Router iface.IRouter
 }
-
-// NewConnection 新建TCP连接对象
-//func NewConnection(conn *net.TCPConn, id uint32, callbackAPI iface.HandleFunc) *Connection {
-//	return &Connection{
-//		Conn:      conn,
-//		ID:        id,
-//		isClosed:  false,
-//		handleAPI: callbackAPI,
-//		ExitChan:  make(chan bool, 1),	// 有缓冲通道
-//	}
-//}
 
 // NewConnection 新建TCP连接对象
 func NewConnection(conn *net.TCPConn, id uint32, router iface.IRouter) *Connection {
@@ -127,12 +113,6 @@ func (c *Connection) startReader() {
 			fmt.Printf("Receive buf error: %s\n", err)
 			continue
 		}
-
-		// 调用当前连接所绑定的handleAPI去处理客户端传来的数据
-		//if err = c.handleAPI(c.Conn, buf, cnt); err != nil {
-		//	fmt.Printf("Conn #%d: handleAPI error: %s\n", c.ID, err)
-		//	break
-		//}
 
 		// 得到当前conn数据的Request
 		//req := NewRequest(c, buf[:cnt])
