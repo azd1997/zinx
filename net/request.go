@@ -1,6 +1,6 @@
 package net
 
-import "github.com/azd1997/zinx/src/iface"
+import "github.com/azd1997/zinx/iface"
 
 type Request struct {
 

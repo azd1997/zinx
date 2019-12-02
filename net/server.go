@@ -2,7 +2,7 @@ package net
 
 import (
 	"fmt"
-	"github.com/azd1997/zinx/src/iface"
+	"github.com/azd1997/zinx/iface"
 	"net"
 )
 
@@ -20,6 +20,9 @@ type Server struct {
 
 	// Port 服务器监听端口
 	Port int
+
+	// Router 服务端注册的连接对应的处理业务
+	Router iface.IRouter
 }
 
 // Start 启动
@@ -31,19 +34,20 @@ func (s *Server) Start() {
 		// 1. 获取一个TCP Addr
 		addr, err := net.ResolveTCPAddr(s.IPVersion, fmt.Sprintf("%s:%d", s.IP, s.Port))
 		if err != nil {
-			fmt.Printf("Start: %s\n", err)
+			fmt.Printf("Start: resolving tcp addr err: %s\n", err)
 			return
 		}
 
 		// 2. 监听服务器地址
 		listener, err := net.ListenTCP(s.IPVersion, addr)
 		if err != nil {
-			fmt.Printf("Start: %s\n", err)
+			fmt.Printf("Start listen %s err: %s\n", s.IPVersion, err)
 			return
 		}
 
 		fmt.Printf("[Start] Server starts listening at IP: %s, Port: %d successful\n", s.IP, s.Port)
 
+		// TODO: 添加一个自动生成ID的方法
 		var connID uint32 = 0
 
 		// 3. 阻塞等待客户端连接，处理客户端连接业务
@@ -74,10 +78,13 @@ func (s *Server) Start() {
 			//	}
 			//}()
 
+			// TODO: Server.Start()设置服务器最大连接数，炒锅最大连接数，则关闭该新连接
+
 			// 原本回显的部分可以由connection实现，如下
 
 			// 将处理当前连接的业务方法和conn进行绑定，得到我们的连接模块
-			dealConn := NewConnection(conn, connID, CallBackToClient)
+			//dealConn := NewConnection(conn, connID, CallBackToClient)
+			dealConn := NewConnection(conn, connID, s.Router)
 			connID++
 			// 尝试启动连接模块
 			go dealConn.Start()
@@ -87,6 +94,8 @@ func (s *Server) Start() {
 
 // Stop 停止
 func (s *Server) Stop() {
+	fmt.Printf("[STOP] Zinx server %s\n", s.Name)
+
 	// TODO: 将服务器的资源、状态或者已经建立的连接等等进行停止或回收
 }
 
@@ -101,6 +110,12 @@ func (s *Server) Serve() {
 	select {}
 }
 
+// AddRouter 添加路由
+func (s *Server) AddRouter(router iface.IRouter) {
+	s.Router = router
+	fmt.Println("Add Router Successfully!")
+}
+
 // NewServer 新建一个Server
 func NewServer(name string) iface.IServer {
 	return &Server{
@@ -108,21 +123,22 @@ func NewServer(name string) iface.IServer {
 		IPVersion: "tcp4",
 		IP:        "0.0.0.0",	// TODO: 暂时写死
 		Port:      8000,
+		Router:nil,
 	}
 }
 
 // CallBackToClient 回显函数，HandleFunc的一个实现（定义当前客户端连接所绑定的handleAPI），用于服务器的功能测试
 // TODO: 以后要将这个handleAPI在demo里自定义
-func CallBackToClient(conn *net.TCPConn, data []byte, cnt int) error {
-	// 回显业务
-	fmt.Println("[Conn Handle] CallBackToClient...")
-
-	if _, err := conn.Write(data[:cnt]); err != nil {
-		fmt.Printf("CallBackToClient: %s\n", err)
-		return err
-	} else {
-		fmt.Printf("Received from client: %s, cnt = %d\n", string(data), cnt)
-	}
-
-	return nil
-}
+//func CallBackToClient(conn *net.TCPConn, data []byte, cnt int) error {
+//	// 回显业务
+//	fmt.Println("[Conn Handle] CallBackToClient...")
+//
+//	if _, err := conn.Write(data[:cnt]); err != nil {
+//		fmt.Printf("CallBackToClient: %s\n", err)
+//		return err
+//	} else {
+//		fmt.Printf("Received from client: %s, cnt = %d\n", string(data), cnt)
+//	}
+//
+//	return nil
+//}

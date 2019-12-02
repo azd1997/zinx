@@ -1,6 +1,6 @@
 package net
 
-import "github.com/azd1997/zinx/src/iface"
+import "github.com/azd1997/zinx/iface"
 
 // 实现用户自己的IRouter，先嵌入这个BaseRouter，再根据需要对“基类”方法进行“重写”
 type BaseRouter struct {}
