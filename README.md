@@ -62,6 +62,9 @@ Zinx - 轻量级TCP服务器框架
    3. 将zinx框架中所有硬编码替换成globalobj参数
    4. 使用zinx v0.4进行测试
 
+5. 消息封装
+    1. 定义一个消息的结构Message（属性有ID、长度、内容， 方法有set和get）
+
 ## 实现
 
 1. 抽象层定义IServer接口并在实体层以Server实现。
