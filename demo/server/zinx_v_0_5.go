@@ -26,26 +26,17 @@ type PingRouter struct {
 }
 
 // 覆盖（屏蔽内层方法）
-func (r *PingRouter) PreHandle(req iface.IRequest) {
-	fmt.Println("Call Router PreHandle")
-	_, err := req.GetConn().GetTCPConn().Write([]byte("before ping\n"))
-	if err != nil {
-		fmt.Printf("prehandle error: %s\n", err)
-	}
-}
-
 func (r *PingRouter) Handle(req iface.IRequest) {
 	fmt.Println("Call Router Handle")
-	_, err := req.GetConn().GetTCPConn().Write([]byte("ping ping ping\n"))
+
+	// 读客户端消息
+	fmt.Println("recv from client : msgId=", req.GetMsgId(), ", data=", string(req.GetData()))
+
+
+	// 回写客户端消息
+	err := req.GetConn().SendMsg(1, []byte("ping ping ping\n"))
 	if err != nil {
 		fmt.Printf("handle error: %s\n", err)
 	}
 }
 
-func (r *PingRouter) PostHandle(req iface.IRequest) {
-	fmt.Println("Call Router PostHandle")
-	_, err := req.GetConn().GetTCPConn().Write([]byte("after ping\n"))
-	if err != nil {
-		fmt.Printf("posthandle error: %s\n", err)
-	}
-}
