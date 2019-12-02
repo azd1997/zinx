@@ -9,7 +9,9 @@ import (
 
 func main() {
 	// 1. 创建Server
-	s := net.NewServer("zinx_v_0_3")
+	// 输入配置文件时，如果是编译成了可执行文件，则应填"./conf/zinx.json"，
+	// 但由于测试时是直接 go run zinx_v_0_x.go所以根目录是项目根目录，配置文件路径应填"./demo/server/conf/zinx.json"
+	s := net.NewServer("./demo/server/conf/zinx.json")
 
 	// 2. 添加自定义路由
 	s.AddRouter(&PingRouter{})

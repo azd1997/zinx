@@ -3,6 +3,7 @@ package net
 import (
 	"fmt"
 	"github.com/azd1997/zinx/iface"
+	"github.com/azd1997/zinx/utils"
 	"net"
 )
 
@@ -28,6 +29,10 @@ type Server struct {
 // Start 启动
 func (s *Server) Start() {
 	fmt.Printf("[Start] Server starts listening at IP: %s, Port: %d\n", s.IP, s.Port)
+	fmt.Printf("[Zinx] Version: %s, MaxConn: %d, MaxPacketSize: %d\n",
+		utils.GlobalObject.Version,
+		utils.GlobalObject.MaxConn,
+		utils.GlobalObject.MaxPacketSize)
 
 	// 异步启动，避免阻塞主线程
 	go func() {
@@ -96,12 +101,17 @@ func (s *Server) AddRouter(router iface.IRouter) {
 }
 
 // NewServer 新建一个Server
-func NewServer(name string) iface.IServer {
+func NewServer(configFile string) iface.IServer {
+
+	// 先初始化全局配置文件
+	// 尽管utils.init中已经加载过一次，但这里再加载可以保证每次启动服务器都能得到最新的配置
+	utils.GlobalObject.Reload(configFile)
+
 	return &Server{
-		Name:      name,
+		Name:      utils.GlobalObject.Name,
 		IPVersion: "tcp4",
-		IP:        "0.0.0.0", // TODO: 暂时写死
-		Port:      8000,
+		IP:        utils.GlobalObject.Host,
+		Port:      utils.GlobalObject.TcpPort,
 		Router:    nil,
 	}
 }

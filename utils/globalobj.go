@@ -36,8 +36,8 @@ type GlobalObj struct {
 }
 
 // Reload 读取配置文件
-func (g *GlobalObj) Reload() {
-	data, err := ioutil.ReadFile("conf/zinx.json")
+func (g *GlobalObj) Reload(file string) {
+	data, err := ioutil.ReadFile(file)
 	if err != nil {
 		panic(err)
 	}
@@ -62,5 +62,5 @@ func init() {
 	}
 
 	//从配置文件中加载一些用户配置的参数
-	GlobalObject.Reload()
+	// GlobalObject.Reload()
 }

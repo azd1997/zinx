@@ -3,6 +3,7 @@ package net
 import (
 	"fmt"
 	"github.com/azd1997/zinx/iface"
+	"github.com/azd1997/zinx/utils"
 	"net"
 )
 
@@ -106,7 +107,7 @@ func (c *Connection) startReader() {
 
 	for {
 		// 读客户端数据到buffer区
-		buf := make([]byte, 512)
+		buf := make([]byte, utils.GlobalObject.MaxPacketSize)
 		//cnt, err := c.Conn.Read(buf)
 		_, err := c.Conn.Read(buf)
 		if err != nil {
