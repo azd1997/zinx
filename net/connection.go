@@ -1,9 +1,10 @@
 package net
 
 import (
+	"errors"
 	"fmt"
 	"github.com/azd1997/zinx/iface"
-	"github.com/azd1997/zinx/utils"
+	"io"
 	"net"
 )
 
@@ -87,13 +88,26 @@ func (c *Connection) RemoteAddr() net.Addr {
 }
 
 // Send 发送数据
-func (c *Connection) Send(data []byte) error {
+func (c *Connection) SendMsg(msgId uint32, data []byte) error {
 
-	// TODO: 待实现，这里随便写的
+	if c.isClosed {
+		return errors.New("connection closed when send msg")
+	}
 
-	cnt, err := c.Conn.Write(data)
+	// 将data封包
+	dp := NewDataPack()
+	msg, err := dp.Pack(NewMessage(msgId, data))
+	if err != nil {
+		fmt.Println("Pack error msg id = ", msgId)
+		return  errors.New("Pack error msg ")
+	}
+
+	// 写回客户端
+	cnt, err := c.Conn.Write(msg)
 	if cnt != len(data) || err != nil {
-		return err
+		fmt.Println("Write msg id ", msgId, " error ")
+		c.ExitChan <- true
+		return errors.New("conn Write error")
 	}
 
 	return nil
@@ -106,19 +120,50 @@ func (c *Connection) startReader() {
 	defer c.Stop()
 
 	for {
-		// 读客户端数据到buffer区
-		buf := make([]byte, utils.GlobalObject.MaxPacketSize)
-		//cnt, err := c.Conn.Read(buf)
-		_, err := c.Conn.Read(buf)
-		if err != nil {
-			fmt.Printf("Receive buf error: %s\n", err)
-			continue
+
+		// 创建拆包对象
+		dp := NewDataPack()
+
+		// 读取客户端的Msg Head
+		headData := make([]byte, dp.GetHeadLen())
+		if _, err := io.ReadFull(c.GetTCPConn(), headData); err != nil {
+			fmt.Println("read msg head error ", err)
+			break
 		}
+
+		//拆包，得到msgid 和 datalen 放在msg中
+		msg , err := dp.Unpack(headData)
+		if err != nil {
+			fmt.Println("unpack error ", err)
+			break
+		}
+
+		//根据 dataLen 读取 data，放在msg.Data中
+		var data []byte
+		if msg.GetDataLen() > 0 {
+			data = make([]byte, msg.GetDataLen())
+			if _, err := io.ReadFull(c.GetTCPConn(), data); err != nil {
+				fmt.Println("read msg data error ", err)
+				break
+			}
+		}
+		msg.SetData(data)
+
+		//// 读客户端数据到buffer区
+		//buf := make([]byte, utils.GlobalObject.MaxPacketSize)
+		////cnt, err := c.Conn.Read(buf)
+		//_, err := c.Conn.Read(buf)
+		//if err != nil {
+		//	fmt.Printf("Receive buf error: %s\n", err)
+		//	continue
+		//}
 
 		// 得到当前conn数据的Request
 		//req := NewRequest(c, buf[:cnt])
 		// 按cnt来截取缓冲区会将字符串末尾添加的\n删除，这样最后客户端打印打印出的before ping; ping; after ping就黏在一块了
-		req := NewRequest(c, buf)
+		//req := NewRequest(c, buf)
+		req := NewRequest(c, msg)
+
 
 		// 从路由中找到注册绑定的Conn对应的router调用
 		// 执行注册的路由方法

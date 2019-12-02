@@ -8,7 +8,8 @@ type Request struct {
 	conn iface.IConnection
 
 	// 客户端的请求数据
-	data []byte
+	//data []byte
+	msg iface.IMessage
 }
 
 // GetConn 获取当前连接
@@ -18,13 +19,18 @@ func (r *Request) GetConn() iface.IConnection {
 
 // GetData 获取当前连接的请求数据
 func (r *Request) GetData() []byte {
-	return r.data
+	return r.msg.GetData()
 }
 
-//
-func NewRequest(conn iface.IConnection, data []byte) iface.IRequest {
+// GetMsgID 获取请求的消息的ID
+func (r *Request) GetMsgID() uint32 {
+	return r.msg.GetMsgId()
+}
+
+// NewRequest 新建请求
+func NewRequest(conn iface.IConnection, msg iface.IMessage) iface.IRequest {
 	return &Request{
 		conn: conn,
-		data: data,
+		msg: msg,
 	}
 }

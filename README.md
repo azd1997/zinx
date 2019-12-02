@@ -64,6 +64,11 @@ Zinx - 轻量级TCP服务器框架
 
 5. 消息封装
     1. 定义一个消息的结构Message（属性有ID、长度、内容， 方法有set和get）
+    2. 基于TLV（Type-Length-Value）解决消息封包与解包：数据包抽象类IDataPack与结构体DataPack实现。(方法：GetDataLen、Pack、Unpack)
+    3. 将消息封装机制继承到zinx中，并作测试服务器开发：
+        - 将Message添加到Request
+        - 修改connection读取数据的机制，需要按照TLV格式拆包读取
+        - 给connection发包增加pack
 
 ## 实现
 

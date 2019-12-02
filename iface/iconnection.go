@@ -19,8 +19,8 @@ type IConnection interface {
 	// RemoteAddr 获取远程客户端的TCP状态 IP Port
 	RemoteAddr() net.Addr
 
-	// Send 发送数据
-	Send(data []byte) error
+	// SendMsg 发送数据
+	SendMsg(msgId uint32, data []byte) error
 }
 
 // HandleFunc 定义连接绑定的 处理业务的函数类型。 data处理业务的数据， l为处理数据的长度
