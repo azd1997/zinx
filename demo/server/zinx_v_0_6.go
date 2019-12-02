@@ -7,6 +7,9 @@ import (
 	"github.com/azd1997/zinx/net"
 )
 
+
+// 要测试消息管理模块，这里自定义了两个路由，
+// 那么就开两个client，一个发Id为0的消息，一个Id为1
 func main() {
 	// 1. 创建Server
 	// 输入配置文件时，如果是编译成了可执行文件，则应填"./conf/zinx.json"，
@@ -14,13 +17,16 @@ func main() {
 	s := net.NewServer("./demo/server/conf/zinx.json")
 
 	// 2. 添加自定义路由
-	s.AddRouter(&PingRouter{})
+	s.AddRouter(0, &PingRouter{})
+	s.AddRouter(1, &HelloRouter{})
 
 	// 3. 启动Server
 	s.Serve()
 }
 
-// 自定义路由
+// 下面自定义了两个路由
+
+
 type PingRouter struct {
 	net.BaseRouter // 先"继承"BaseRouter
 }
@@ -40,3 +46,22 @@ func (r *PingRouter) Handle(req iface.IRequest) {
 	}
 }
 
+
+type HelloRouter struct {
+	net.BaseRouter // 先"继承"BaseRouter
+}
+
+// 覆盖（屏蔽内层方法）
+func (r *HelloRouter) Handle(req iface.IRequest) {
+	fmt.Println("Call Router Handle")
+
+	// 读客户端消息
+	fmt.Println("recv from client : msgId=", req.GetMsgId(), ", data=", string(req.GetData()))
+
+
+	// 回写客户端消息
+	err := req.GetConn().SendMsg(1, []byte("Hello Zinx Router v0.6\n"))
+	if err != nil {
+		fmt.Printf("handle error: %s\n", err)
+	}
+}
