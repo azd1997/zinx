@@ -70,9 +70,14 @@ Zinx - 轻量级TCP服务器框架
         - 修改connection读取数据的机制，需要按照TLV格式拆包读取
         - 给connection发包增加pack
 
+6. 多路由（消息管理）
+   1.
+
 ## 实现
 
 1. 抽象层定义IServer接口并在实体层以Server实现。
 2. 抽象层定义IConnection接口并在实体层以Connection实现。
 3. 抽象层定义IRequest接口并在实体层以Request实现; 抽象层定义IRouter并实现BaseRouter基类。
-
+4. 全局变量GlobalObject，从json加载配置
+5. Message/DataPack.
+6.

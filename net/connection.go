@@ -24,16 +24,30 @@ type Connection struct {
 	ExitChan chan bool
 
 	// Router 该连接处理的方法路由
-	Router iface.IRouter
+	// Router iface.IRouter
+
+	// MsgHandler 服务端注册的连接对应的消息管理模块（多路由）
+	MsgHandler iface.IMsgHandle
 }
 
 // NewConnection 新建TCP连接对象
-func NewConnection(conn *net.TCPConn, id uint32, router iface.IRouter) *Connection {
+//func NewConnection(conn *net.TCPConn, id uint32, router iface.IRouter) *Connection {
+//	return &Connection{
+//		Conn:     conn,
+//		ID:       id,
+//		isClosed: false,
+//		Router:   router,
+//		ExitChan: make(chan bool, 1), // 有缓冲通道
+//	}
+//}
+
+// NewConnection 新建TCP连接对象
+func NewConnection(conn *net.TCPConn, id uint32, msgHandler iface.IMsgHandle) *Connection {
 	return &Connection{
 		Conn:     conn,
 		ID:       id,
 		isClosed: false,
-		Router:   router,
+		MsgHandler:msgHandler,
 		ExitChan: make(chan bool, 1), // 有缓冲通道
 	}
 }
@@ -167,10 +181,6 @@ func (c *Connection) startReader() {
 
 		// 从路由中找到注册绑定的Conn对应的router调用
 		// 执行注册的路由方法
-		go func(req iface.IRequest) {
-			c.Router.PreHandle(req)
-			c.Router.Handle(req)
-			c.Router.PostHandle(req)
-		}(req)
+		go c.MsgHandler.DoMsgHandler(req)
 	}
 }

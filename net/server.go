@@ -23,7 +23,10 @@ type Server struct {
 	Port int
 
 	// Router 服务端注册的连接对应的处理业务
-	Router iface.IRouter
+	// Router iface.IRouter
+
+	// MsgHandler 服务端注册的连接对应的消息管理模块（多路由）
+	MsgHandler iface.IMsgHandle
 }
 
 // Start 启动
@@ -68,7 +71,7 @@ func (s *Server) Start() {
 
 			// 将处理当前连接的业务方法和conn进行绑定，得到我们的连接模块
 			//dealConn := NewConnection(conn, connID, CallBackToClient)
-			dealConn := NewConnection(conn, connID, s.Router)
+			dealConn := NewConnection(conn, connID, s.MsgHandler)
 			connID++
 			// 尝试启动连接模块
 			go dealConn.Start()
@@ -95,8 +98,8 @@ func (s *Server) Serve() {
 }
 
 // AddRouter 添加路由
-func (s *Server) AddRouter(router iface.IRouter) {
-	s.Router = router
+func (s *Server) AddRouter(msgId uint32, router iface.IRouter) {
+	s.MsgHandler.AddRouter(msgId, router)
 	fmt.Println("Add Router Successfully!")
 }
 
@@ -112,6 +115,6 @@ func NewServer(configFile string) iface.IServer {
 		IPVersion: "tcp4",
 		IP:        utils.GlobalObject.Host,
 		Port:      utils.GlobalObject.TcpPort,
-		Router:    nil,
+		MsgHandler: NewMsgHandle(),
 	}
 }

@@ -12,5 +12,5 @@ type IServer interface {
 	Serve()
 
 	// AddRouter 路由功能，给当前的服务器注册一个路由方法，供客户端的连接处理使用
-	AddRouter(router IRouter)
+	AddRouter(msgId uint32, router IRouter)
 }
