@@ -60,7 +60,7 @@ Zinx - 轻量级TCP服务器框架
    1. 服务器应用/conf/zinx.json（由用户填写）
    2. 创建zinx全局配置模块/utils/globalobj.go
    3. 将zinx框架中所有硬编码替换成globalobj参数
-   4. 使用zinx v0.4进行测试
+   4. 使用zinx vchannel
 
 5. 消息封装
     1. 定义一个消息的结构Message（属性有ID、长度、内容， 方法有set和get）
@@ -81,6 +81,13 @@ Zinx - 轻量级TCP服务器框架
    2. startReader中之前读完之后写回客户端的操作交给startWriter去做
    3. 在connection.Start中增加 go startWriter，使读/写goroutine一同启动。
 
+8. 消息队列与多任务处理机制
+   1. 前面读写分离的设计是客户端发数据->服务端读数据->服务端写回数据的连续过程。每一个conn对应了一个reader和一个writer goroutine。当并发量高起来之后，不能无限制开很多个goroutine，切换开销会变得明显. 因此需要实现工作池机制。worker pool中有固定数量的worker goroutine（处理真正客户端请求的核心业务），worker pool 通过消息队列接收外界请求执行的的任务。每个worker配一个消息队列（也就是channel）
+   2. 步骤：
+      1. 创建一个消息队列
+      2. 创建多任务worker的工作池并启动
+      3. 将之前的发送消息全部改成将消息发给消息队列和worker工作池来处理
+
 ## 实现
 
 1. 抽象层定义IServer接口并在实体层以Server实现。
@@ -89,3 +96,4 @@ Zinx - 轻量级TCP服务器框架
 4. 全局变量GlobalObject，从json加载配置
 5. Message/DataPack.
 6. IMsgHandler/MsgHandler
+7. connection.msgChan

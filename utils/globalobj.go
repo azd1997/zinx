@@ -13,6 +13,8 @@ var GlobalObject *GlobalObj
 // GlobalObj 存储一切有关zinx框架的全局参数，供其他模块使用
 type GlobalObj struct {
 
+	/*server配置*/
+
 	// TcpServer 当前Zinx的全局Server对象
 	TcpServer iface.IServer
 
@@ -25,6 +27,8 @@ type GlobalObj struct {
 	// Name 当前服务器名称
 	Name string
 
+	/*zinx配置*/
+
 	// Version 当前Zinx版本号
 	Version string
 
@@ -33,11 +37,21 @@ type GlobalObj struct {
 
 	// MaxConn 当前服务器主机允许的最大链接个数
 	MaxConn int
+
+	// WorkerPoolSize 工作池大小
+	WorkerPoolSize uint32
+
+	// MaxWorkerTaskLen 业务工作Worker对应负责的任务队列最大任务存储数量
+	MaxWorkerTaskLen uint32
+
+	/*配置文件*/
+	// ConfFilePath 配置文件路径
+	ConfFilePath string
 }
 
 // Reload 读取配置文件
-func (g *GlobalObj) Reload(file string) {
-	data, err := ioutil.ReadFile(file)
+func (g *GlobalObj) Reload(confFile string) {
+	data, err := ioutil.ReadFile(confFile)
 	if err != nil {
 		panic(err)
 	}
@@ -47,6 +61,8 @@ func (g *GlobalObj) Reload(file string) {
 	if err != nil {
 		panic(err)
 	}
+
+	g.ConfFilePath = confFile
 }
 
 // init 初始化配置
@@ -59,8 +75,12 @@ func init() {
 		Host:    "0.0.0.0",
 		MaxConn: 12000,
 		MaxPacketSize:4096,
+		WorkerPoolSize:10,
+		MaxWorkerTaskLen:1024,
+
+		ConfFilePath: "conf/zinx.json",
 	}
 
 	//从配置文件中加载一些用户配置的参数
-	// GlobalObject.Reload()
+	GlobalObject.Reload(GlobalObject.ConfFilePath)
 }
