@@ -86,7 +86,7 @@ func (mh *MsgHandle)SendMsgToTaskQueue(request iface.IRequest) {
 
 	//得到需要处理此条连接的workerID
 	workerID := request.GetConn().GetConnID() % mh.WorkerPoolSize
-	fmt.Println("Add ConnID=", request.GetConn().GetConnID()," request msgID=", request.GetMsgID(), "to workerID=", workerID)
+	fmt.Println("Add ConnID=", request.GetConn().GetConnID()," request msgID=", request.GetMsgId(), "to workerID=", workerID)
 	//将请求消息发送给任务队列
 	mh.TaskQueue[workerID] <- request
 }

@@ -2,6 +2,7 @@ package utils
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/azd1997/zinx/iface"
 	"io/ioutil"
 )
@@ -49,17 +50,20 @@ type GlobalObj struct {
 	ConfFilePath string
 }
 
-// Reload 读取配置文件
+// Reload 读取配置文件。
+// 读取成功就将配置文件属性赋予； 如失败则退出等下一次被调用时指定可用的配置路径
 func (g *GlobalObj) Reload(confFile string) {
 	data, err := ioutil.ReadFile(confFile)
 	if err != nil {
-		panic(err)
+		fmt.Println("global config read: ", err)
+		return
 	}
 	//将json数据解析到struct中
 	//fmt.Printf("json :%s\n", data)
 	err = json.Unmarshal(data, &GlobalObject)
 	if err != nil {
-		panic(err)
+		fmt.Println("global config read: ", err)
+		return
 	}
 
 	g.ConfFilePath = confFile

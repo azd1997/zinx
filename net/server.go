@@ -36,6 +36,10 @@ func (s *Server) Start() {
 
 	// 异步启动，避免阻塞主线程
 	go func() {
+
+		// 0. 启动 worker 工作池机制
+		s.MsgHandler.StartWorkerPool()
+
 		// 1. 获取一个TCP Addr
 		addr, err := net.ResolveTCPAddr(s.IPVersion, fmt.Sprintf("%s:%d", s.IP, s.Port))
 		if err != nil {

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/azd1997/zinx/iface"
+	"github.com/azd1997/zinx/utils"
 	"io"
 	"net"
 )
@@ -161,7 +162,17 @@ func (c *Connection) startReader() {
 
 		// 从路由中找到注册绑定的Conn对应的router调用
 		// 执行注册的路由方法
-		go c.MsgHandler.DoMsgHandler(req)
+		// go c.MsgHandler.DoMsgHandler(req)
+
+		// 如果工作池还有空闲worker则传给worker，否则从绑定好的消息和对应处理方法执行相应的handle方法
+		if utils.GlobalObject.WorkerPoolSize > 0 {
+			//已经启动工作池机制，将消息交给Worker处理
+			c.MsgHandler.SendMsgToTaskQueue(req)
+		} else {
+			// 没有配置工作池机制或者worker已耗尽时则仍然按照原来的而做法单开goroutine去处理
+			//从绑定好的消息和对应的处理方法中执行对应的Handle方法
+			go c.MsgHandler.DoMsgHandler(req)
+		}
 	}
 }
 
