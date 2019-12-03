@@ -27,7 +27,7 @@ func main() {
 
 		// 封包消息
 		dp := enet.NewDataPack()
-		msg, _ := dp.Pack(enet.NewMessage(1,[]byte("Zinx V0.7 Client Test Message")))
+		msg, _ := dp.Pack(enet.NewMessage(1,[]byte("Zinx V0.8 Client Test Message")))
 		_, err := conn.Write(msg)
 		if err !=nil {
 			fmt.Println("write error err ", err)
