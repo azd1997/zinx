@@ -22,11 +22,8 @@ type Server struct {
 	// Port 服务器监听端口
 	Port int
 
-	// Router 服务端注册的连接对应的处理业务
-	// Router iface.IRouter
-
 	// MsgHandler 服务端注册的连接对应的消息管理模块（多路由）
-	MsgHandler iface.IMsgHandle
+	MsgHandler iface.IMsgHandler
 }
 
 // Start 启动
@@ -70,7 +67,6 @@ func (s *Server) Start() {
 			// TODO: Server.Start()设置服务器最大连接数，炒锅最大连接数，则关闭该新连接
 
 			// 将处理当前连接的业务方法和conn进行绑定，得到我们的连接模块
-			//dealConn := NewConnection(conn, connID, CallBackToClient)
 			dealConn := NewConnection(conn, connID, s.MsgHandler)
 			connID++
 			// 尝试启动连接模块

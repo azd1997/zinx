@@ -71,7 +71,8 @@ Zinx - 轻量级TCP服务器框架
         - 给connection发包增加pack
 
 6. 多路由（消息管理）
-   1.
+   1. 抽象类IMsgHandler， 包含方法：DoMsgHandler、AddRouter
+   2. 具体实现MsgHandler, 属性字段Apis (map[uint32]IRouter)
 
 ## 实现
 
@@ -80,4 +81,4 @@ Zinx - 轻量级TCP服务器框架
 3. 抽象层定义IRequest接口并在实体层以Request实现; 抽象层定义IRouter并实现BaseRouter基类。
 4. 全局变量GlobalObject，从json加载配置
 5. Message/DataPack.
-6.
+6. IMsgHandler/MsgHandler

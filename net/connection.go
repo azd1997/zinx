@@ -23,26 +23,12 @@ type Connection struct {
 	// ExitChan 告知当前连接退出的channel
 	ExitChan chan bool
 
-	// Router 该连接处理的方法路由
-	// Router iface.IRouter
-
 	// MsgHandler 服务端注册的连接对应的消息管理模块（多路由）
-	MsgHandler iface.IMsgHandle
+	MsgHandler iface.IMsgHandler
 }
 
 // NewConnection 新建TCP连接对象
-//func NewConnection(conn *net.TCPConn, id uint32, router iface.IRouter) *Connection {
-//	return &Connection{
-//		Conn:     conn,
-//		ID:       id,
-//		isClosed: false,
-//		Router:   router,
-//		ExitChan: make(chan bool, 1), // 有缓冲通道
-//	}
-//}
-
-// NewConnection 新建TCP连接对象
-func NewConnection(conn *net.TCPConn, id uint32, msgHandler iface.IMsgHandle) *Connection {
+func NewConnection(conn *net.TCPConn, id uint32, msgHandler iface.IMsgHandler) *Connection {
 	return &Connection{
 		Conn:     conn,
 		ID:       id,
@@ -163,19 +149,6 @@ func (c *Connection) startReader() {
 		}
 		msg.SetData(data)
 
-		//// 读客户端数据到buffer区
-		//buf := make([]byte, utils.GlobalObject.MaxPacketSize)
-		////cnt, err := c.Conn.Read(buf)
-		//_, err := c.Conn.Read(buf)
-		//if err != nil {
-		//	fmt.Printf("Receive buf error: %s\n", err)
-		//	continue
-		//}
-
-		// 得到当前conn数据的Request
-		//req := NewRequest(c, buf[:cnt])
-		// 按cnt来截取缓冲区会将字符串末尾添加的\n删除，这样最后客户端打印打印出的before ping; ping; after ping就黏在一块了
-		//req := NewRequest(c, buf)
 		req := NewRequest(c, msg)
 
 
