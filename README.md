@@ -73,6 +73,13 @@ Zinx - 轻量级TCP服务器框架
 6. 多路由（消息管理）
    1. 抽象类IMsgHandler， 包含方法：DoMsgHandler、AddRouter
    2. 具体实现MsgHandler, 属性字段Apis (map[uint32]IRouter)
+   3. 将connection属性中Router替换为MsgHandler并修改其NewConnection方法
+   4. connection之前使用router的方法都相应修改为使用MsgHandler
+
+7. 读写分离
+   1. connection增加msgChan字段用来将读goroutine数据消息传给写goroutine
+   2. startReader中之前读完之后写回客户端的操作交给startWriter去做
+   3. 在connection.Start中增加 go startWriter，使读/写goroutine一同启动。
 
 ## 实现
 

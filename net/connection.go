@@ -25,6 +25,9 @@ type Connection struct {
 
 	// MsgHandler 服务端注册的连接对应的消息管理模块（多路由）
 	MsgHandler iface.IMsgHandler
+
+	// msgChan 无缓冲通道，用于读写两个goroutine之间的消息通信
+	msgChan chan []byte
 }
 
 // NewConnection 新建TCP连接对象
@@ -35,6 +38,7 @@ func NewConnection(conn *net.TCPConn, id uint32, msgHandler iface.IMsgHandler) *
 		isClosed: false,
 		MsgHandler:msgHandler,
 		ExitChan: make(chan bool, 1), // 有缓冲通道
+		msgChan:make(chan []byte),		// 读写goroutine间的消息通道
 	}
 }
 
@@ -44,15 +48,17 @@ func (c *Connection) Start() {
 
 	// 启动当前连接的读数据业务
 	go c.startReader()
+	// 启动当前连接的写数据goroutine
+	go c.startWriter()
 
 	// 等待退出信息，来停止连接
-	for {
-		select {
-		case <-c.ExitChan:
-			// 收到退出信息，不再阻塞
-			return
-		}
-	}
+	//for {
+	//	select {
+	//	case <-c.ExitChan:
+	//		// 收到退出信息，不再阻塞
+	//		return
+	//	}
+	//}
 }
 
 // Stop 停止连接，结束当前连接的工作
@@ -103,12 +109,13 @@ func (c *Connection) SendMsg(msgId uint32, data []byte) error {
 	}
 
 	// 写回客户端
-	cnt, err := c.Conn.Write(msg)
-	if cnt != len(data) || err != nil {
-		fmt.Println("Write msg id ", msgId, " error ")
-		c.ExitChan <- true
-		return errors.New("conn Write error")
-	}
+	//cnt, err := c.Conn.Write(msg)
+	//if cnt != len(data) || err != nil {
+	//	fmt.Println("Write msg id ", msgId, " error ")
+	//	c.ExitChan <- true
+	//	return errors.New("conn Write error")
+	//}
+	c.msgChan <- msg
 
 	return nil
 }
@@ -155,5 +162,25 @@ func (c *Connection) startReader() {
 		// 从路由中找到注册绑定的Conn对应的router调用
 		// 执行注册的路由方法
 		go c.MsgHandler.DoMsgHandler(req)
+	}
+}
+
+// startWriter 写消息goroutine，用户将数据发送给客户端
+func (c *Connection) startWriter() {
+	defer fmt.Println(c.RemoteAddr().String(), " conn writer exit.")
+
+	// 除非出错或者收到退出信号，否则一直循环
+	for {
+		select {
+		case data := <-c.msgChan:
+			//有数据要写给客户端
+			if _, err := c.Conn.Write(data); err != nil {
+				fmt.Println("Send Data error:, ", err, " Conn Writer exit")
+				return
+			}
+		case <- c.ExitChan:
+			//conn已经关闭
+			return
+		}
 	}
 }
