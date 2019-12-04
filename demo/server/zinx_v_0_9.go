@@ -16,6 +16,11 @@ func main() {
 	// 但由于测试时是直接 go run zinx_v_0_x.go所以根目录是项目根目录，配置文件路径应填"./demo/server/conf/zinx.json"
 	s := net.NewServer("./demo/server/conf/zinx.json")
 
+
+	//注册链接hook回调函数
+	s.SetOnConnStart(DoConnectionBegin)
+	s.SetOnConnStop(DoConnectionLost)
+
 	// 2. 添加自定义路由
 	s.AddRouter(0, &PingRouter{})
 	s.AddRouter(1, &HelloRouter{})
@@ -64,4 +69,19 @@ func (r *HelloRouter) Handle(req iface.IRequest) {
 	if err != nil {
 		fmt.Printf("handle error: %s\n", err)
 	}
+}
+
+
+//创建连接的时候执行
+func DoConnectionBegin(conn iface.IConnection) {
+	fmt.Println("DoConnecionBegin is Called ... ")
+	err := conn.SendMsg(2, []byte("DoConnection BEGIN..."))
+	if err != nil {
+		fmt.Println(err)
+	}
+}
+
+//连接断开的时候执行
+func DoConnectionLost(conn iface.IConnection) {
+	fmt.Println("DoConneciotnLost is Called ... ")
 }

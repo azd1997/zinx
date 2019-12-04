@@ -106,7 +106,9 @@ Zinx - 轻量级TCP服务器框架
        1. IServer中增加两个Hook的set和call方法，共四个方法
        2. Server中增加两个Hook函数字段，并实现四个方法
        3. 在connection.start和stop中调用两个钩子函数
-
+    5. 测试
+       1. 在zinx_v_0_9.go中自定义这两个钩子方法，并注册到server中
+       2. client代码不变
 
 ## 实现
 
