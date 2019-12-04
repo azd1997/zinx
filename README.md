@@ -114,6 +114,7 @@ Zinx - 轻量级TCP服务器框架
     1.  使用连接时，希望绑定一些和用户有关的参数数据，所以这一版本增加相应传递参数的接口方法
     2. IConnection增加SetProperty、GetProperty，RemoveProperty
     3. Connection增加一个map字段用来存储属性以及一个用来保护其的读写锁，并实现三个方法
+    4. 测试服务器在连接启动和连接停止两个钩子函数中设置并读取连接属性
 
 ## 实现
 
