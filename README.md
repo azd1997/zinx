@@ -1,6 +1,6 @@
 # Zinx复刻
 
-*原项目地址： https://github.com/aceld/zinx. 本项目仅用于学习*
+*原项目地址： <https://github.com/aceld/zinx>. 本项目仅用于学习*
 
 ## 结构
 
@@ -89,39 +89,31 @@ Zinx - 轻量级TCP服务器框架
       3. 将之前的发送消息全部改成将消息发给消息队列和worker工作池来处理
 
 9. 链接管理
-   1.  创建链接管理模块
-       1.  当链接数较多时，为了保证服务端响应速度，应设置链接限制，拒绝过多的链接请求
-       2.  创建链接管理模块IConnManager/ConnManager
-   2.  将连接管理模块集成到zinx
-       1.  将connmanager集成到server中，server中增加相应方法和属性，
-       2.  connection中增加server字段并在New方法中增加添加链接方法（将自己添加到server.connmanager中）
-       3.  server.start中增加对连接数量判断，满了则关闭新建立的链接（拒绝新连接）并continue
-       4.  connection.stop中要增加将自己从server.connmanager删除的操作
-       5.  server.stop中也应该将所有链接清空
-    3. 给链接增加带缓冲的发包方法
+   1. 创建链接管理模块
+       1. 当链接数较多时，为了保证服务端响应速度，应设置链接限制，拒绝过多的链接请求
+       2. 创建链接管理模块IConnManager/ConnManager
+   2. 将连接管理模块集成到zinx
+       1. 将connmanager集成到server中，server中增加相应方法和属性，
+       2. connection中增加server字段并在New方法中增加添加链接方法（将自己添加到server.connmanager中）
+       3. server.start中增加对连接数量判断，满了则关闭新建立的链接（拒绝新连接）并continue
+       4. connection.stop中要增加将自己从server.connmanager删除的操作
+       5. server.stop中也应该将所有链接清空
+   3. 给链接增加带缓冲的发包方法
        1. 以前无缓冲的msgChan发包如果客户端链接比较多而对方处理不及时可能产生阻塞，影响其他连接的处理，因此提供一个有缓冲的消息通道和非阻塞的发包方法是有必要的
        2. IConnection增加sendBuffMsg方法，Connection增加msgBuffChan和该方法，New作相应修改
        3. connection.startwriter中增加对msgBuffChan消息的处理
-    4. 为链接启动和停止增加Hook方法
+   4. 为链接启动和停止增加Hook方法
        1. IServer中增加两个Hook的set和call方法，共四个方法
        2. Server中增加两个Hook函数字段，并实现四个方法
        3. 在connection.start和stop中调用两个钩子函数
-    5. 测试
+   5. 测试
        1. 在zinx_v_0_9.go中自定义这两个钩子方法，并注册到server中
        2. client代码不变
 
 10. 链接属性设置
-    1.  使用连接时，希望绑定一些和用户有关的参数数据，所以这一版本增加相应传递参数的接口方法
+    1. 使用连接时，希望绑定一些和用户有关的参数数据，所以这一版本增加相应传递参数的接口方法
     2. IConnection增加SetProperty、GetProperty，RemoveProperty
     3. Connection增加一个map字段用来存储属性以及一个用来保护其的读写锁，并实现三个方法
     4. 测试服务器在连接启动和连接停止两个钩子函数中设置并读取连接属性
 
-## 实现
-
-1. 抽象层定义IServer接口并在实体层以Server实现。
-2. 抽象层定义IConnection接口并在实体层以Connection实现。
-3. 抽象层定义IRequest接口并在实体层以Request实现; 抽象层定义IRouter并实现BaseRouter基类。
-4. 全局变量GlobalObject，从json加载配置
-5. Message/DataPack.
-6. IMsgHandler/MsgHandler
-7. connection.msgChan
+11. TODO: 整理代码
