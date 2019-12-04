@@ -24,6 +24,13 @@ type IConnection interface {
 
 	// SendBuffMsg 带缓冲发送数据
 	SendBuffMsg(msgId uint32, data []byte) error
+
+	//设置链接属性
+	SetProperty(key string, value interface{})
+	//获取链接属性
+	GetProperty(key string)(interface{}, error)
+	//移除链接属性
+	RemoveProperty(key string)
 }
 
 // HandleFunc 定义连接绑定的 处理业务的函数类型。 data处理业务的数据， l为处理数据的长度

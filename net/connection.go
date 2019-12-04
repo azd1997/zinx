@@ -7,6 +7,7 @@ import (
 	"github.com/azd1997/zinx/utils"
 	"io"
 	"net"
+	"sync"
 )
 
 // Connection TCP连接，iface.IConnection接口的实现
@@ -35,6 +36,12 @@ type Connection struct {
 
 	//有缓冲管道，用于读、写两个goroutine之间的消息通信
 	msgBuffChan chan []byte
+
+
+	//链接属性
+	property     map[string]interface{}
+	//保护链接属性修改的锁
+	propertyLock sync.RWMutex
 }
 
 // NewConnection 新建TCP连接对象
@@ -48,7 +55,7 @@ func NewConnection(server iface.IServer, conn *net.TCPConn, id uint32, msgHandle
 		ExitChan: make(chan bool, 1), // 有缓冲通道
 		msgChan:make(chan []byte),		// 读写goroutine间的消息通道
 		msgBuffChan:make(chan []byte, utils.GlobalObject.MaxWorkerTaskLen),
-
+		property:     make(map[string]interface{}), //对链接属性map初始化
 	}
 
 	//将新创建的Conn添加到链接管理中
@@ -238,4 +245,33 @@ func (c *Connection) startWriter() {
 			return
 		}
 	}
+}
+
+
+//设置链接属性
+func (c *Connection) SetProperty(key string, value interface{}) {
+	c.propertyLock.Lock()
+	defer c.propertyLock.Unlock()
+
+	c.property[key] = value
+}
+
+//获取链接属性
+func (c *Connection) GetProperty(key string) (interface{}, error) {
+	c.propertyLock.RLock()
+	defer c.propertyLock.RUnlock()
+
+	if value, ok := c.property[key]; ok  {
+		return value, nil
+	} else {
+		return nil, errors.New("no property found")
+	}
+}
+
+//移除链接属性
+func (c *Connection) RemoveProperty(key string) {
+	c.propertyLock.Lock()
+	defer c.propertyLock.Unlock()
+
+	delete(c.property, key)
 }

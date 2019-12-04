@@ -110,6 +110,11 @@ Zinx - 轻量级TCP服务器框架
        1. 在zinx_v_0_9.go中自定义这两个钩子方法，并注册到server中
        2. client代码不变
 
+10. 链接属性设置
+    1.  使用连接时，希望绑定一些和用户有关的参数数据，所以这一版本增加相应传递参数的接口方法
+    2. IConnection增加SetProperty、GetProperty，RemoveProperty
+    3. Connection增加一个map字段用来存储属性以及一个用来保护其的读写锁，并实现三个方法
+
 ## 实现
 
 1. 抽象层定义IServer接口并在实体层以Server实现。
