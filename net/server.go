@@ -24,6 +24,31 @@ type Server struct {
 
 	// MsgHandler 服务端注册的连接对应的消息管理模块（多路由）
 	MsgHandler iface.IMsgHandler
+
+	//当前Server的链接管理器
+	ConnMgr iface.IConnManager
+
+	//该Server的连接创建时Hook函数
+	OnConnStart func(conn iface.IConnection)
+	//该Server的连接断开时的Hook函数
+	OnConnStop func(conn iface.IConnection)
+}
+
+// NewServer 新建一个Server
+func NewServer(configFile string) iface.IServer {
+
+	// 先初始化全局配置文件
+	// 尽管utils.init中已经加载过一次，但这里再加载可以保证每次启动服务器都能得到最新的配置
+	utils.GlobalObject.Reload(configFile)
+
+	return &Server{
+		Name:      utils.GlobalObject.Name,
+		IPVersion: "tcp4",
+		IP:        utils.GlobalObject.Host,
+		Port:      utils.GlobalObject.TcpPort,
+		MsgHandler: NewMsgHandle(),
+		ConnMgr:NewConnManager(),
+	}
 }
 
 // Start 启动
@@ -68,10 +93,17 @@ func (s *Server) Start() {
 				continue
 			}
 
-			// TODO: Server.Start()设置服务器最大连接数，炒锅最大连接数，则关闭该新连接
+			//=============
+			//3.2 设置服务器最大连接控制,如果超过最大连接，那么则关闭此新的连接
+			if s.ConnMgr.Len() >= utils.GlobalObject.MaxConn {
+				conn.Close()
+				continue
+			}
+			//=============
 
 			// 将处理当前连接的业务方法和conn进行绑定，得到我们的连接模块
-			dealConn := NewConnection(conn, connID, s.MsgHandler)
+			// dealConn := NewConnection(conn, connID, s.MsgHandler)
+			dealConn := NewConnection(s, conn, connID, s.MsgHandler)
 			connID++
 			// 尝试启动连接模块
 			go dealConn.Start()
@@ -84,6 +116,8 @@ func (s *Server) Stop() {
 	fmt.Printf("[STOP] Zinx server %s\n", s.Name)
 
 	// TODO: 将服务器的资源、状态或者已经建立的连接等等进行停止或回收
+
+	s.ConnMgr.ClearConn()
 }
 
 // Serve 运行
@@ -103,18 +137,35 @@ func (s *Server) AddRouter(msgId uint32, router iface.IRouter) {
 	fmt.Println("Add Router Successfully!")
 }
 
-// NewServer 新建一个Server
-func NewServer(configFile string) iface.IServer {
+//得到链接管理
+func (s *Server) GetConnMgr() iface.IConnManager {
+	return s.ConnMgr
+}
 
-	// 先初始化全局配置文件
-	// 尽管utils.init中已经加载过一次，但这里再加载可以保证每次启动服务器都能得到最新的配置
-	utils.GlobalObject.Reload(configFile)
+//设置该Server的连接创建时Hook函数
+func (s *Server) SetOnConnStart(hookFunc func (iface.IConnection)) {
+	s.OnConnStart = hookFunc
+}
 
-	return &Server{
-		Name:      utils.GlobalObject.Name,
-		IPVersion: "tcp4",
-		IP:        utils.GlobalObject.Host,
-		Port:      utils.GlobalObject.TcpPort,
-		MsgHandler: NewMsgHandle(),
+//设置该Server的连接断开时的Hook函数
+func (s *Server) SetOnConnStop(hookFunc func (iface.IConnection)) {
+	s.OnConnStop = hookFunc
+}
+
+//调用连接OnConnStart Hook函数
+func (s *Server) CallOnConnStart(conn iface.IConnection) {
+	if s.OnConnStart != nil {
+		fmt.Println("---> CallOnConnStart....")
+		s.OnConnStart(conn)
 	}
 }
+
+//调用连接OnConnStop Hook函数
+func (s *Server) CallOnConnStop(conn iface.IConnection) {
+	if s.OnConnStop != nil {
+		fmt.Println("---> CallOnConnStop....")
+		s.OnConnStop(conn)
+	}
+}
+
+
